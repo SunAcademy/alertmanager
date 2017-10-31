@@ -273,6 +273,7 @@ type WebhookConfig struct {
 
 	// URL to send POST request to.
 	URL string `yaml:"url" json:"url"`
+	EXTRA map[string]string `yaml:"extra,omitempty" json:"extra,omitempty"`
 
 	// Catches all undefined fields and must be empty after parsing.
 	XXX map[string]interface{} `yaml:",inline" json:"-"`

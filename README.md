@@ -9,6 +9,11 @@ The Alertmanager handles alerts sent by client applications such as the Promethe
 * [Documentation](http://prometheus.io/docs/alerting/alertmanager/)
 
 
+## Tips
+
+This repo was forked from prometheus/alertmanager and added some customer func  
+see more at [vinkdong's blog](https://vinkdong.com/prometheus%E5%B8%B8%E7%94%A8%E9%85%8D%E7%BD%AE/)
+
 ## Install
 
 There are various ways of installing Alertmanager.
@@ -22,7 +27,7 @@ is the recommended way of installing Alertmanager.
 
 ### Docker images
 
-Docker images are available on [Quay.io](https://quay.io/repository/prometheus/alertmanager).
+Docker images are available on [Quay.io](https://quay.io/repository/google/alertmanager).
 
 ### Compiling the binary
 

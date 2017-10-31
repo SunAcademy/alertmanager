@@ -221,6 +221,9 @@ receivers:
 - name: "default"
   webhook_configs:
   - url: 'http://%s'
+    extra:
+      zhangsan: "12201"
+      lisi: "32919"
 `
 
 	at := NewAcceptanceTest(t, &AcceptanceOpts{
@@ -228,9 +231,9 @@ receivers:
 	})
 
 	co := at.Collector("webhook")
-	wh := NewWebhook(co)
+	//wh := NewWebhook(co)
 
-	am := at.Alertmanager(fmt.Sprintf(conf, wh.Address()))
+	am := at.Alertmanager(fmt.Sprintf(conf, "ml.hd.wenqi.us/receive"))
 
 	am.Push(At(1.1), Alert("alertname", "test1").Active(1))
 	am.Push(At(1.7), Alert("alertname", "test5").Active(1))

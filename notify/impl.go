@@ -144,13 +144,14 @@ var userAgentHeader = fmt.Sprintf("Alertmanager/%s", version.Version)
 type Webhook struct {
 	// The URL to which notifications are sent.
 	URL    string
+	Extra  map[string]string
 	tmpl   *template.Template
 	logger log.Logger
 }
 
 // NewWebhook returns a new Webhook.
 func NewWebhook(conf *config.WebhookConfig, t *template.Template, l log.Logger) *Webhook {
-	return &Webhook{URL: conf.URL, tmpl: t, logger: l}
+	return &Webhook{URL: conf.URL, tmpl: t, logger: l, Extra: conf.EXTRA}
 }
 
 // WebhookMessage defines the JSON object send to webhook endpoints.
@@ -171,9 +172,35 @@ func (w *Webhook) Notify(ctx context.Context, alerts ...*types.Alert) (bool, err
 		level.Error(w.logger).Log("msg", "group key missing")
 	}
 
+	if len(w.Extra) > 0 {
+		failedReceiver := make([]string, 0)
+		for n, k := range w.Extra {
+			data.Receiver = k
+			for i := 0; ; {
+				if retry, _ := w.sendWebhook(data, groupKey, ctx); retry == true {
+					i ++
+				} else {
+					break
+				}
+				if i == 10 {
+					failedReceiver = append(failedReceiver, fmt.Sprintf("%s:%s", n, k))
+					break
+				}
+			}
+		}
+		if len(failedReceiver) > 0 {
+			return false, fmt.Errorf("send sms to %v failed", failedReceiver)
+		}
+		return false, nil
+	}
+
+	return w.sendWebhook(data, groupKey, ctx)
+}
+
+func (w *Webhook) sendWebhook(data *template.Data, groupKey string, ctx context.Context) (bool, error) {
 	msg := &WebhookMessage{
-		Version:  "4",
-		Data:     data,
+		Version: "4",
+		Data:    data,
 		GroupKey: groupKey,
 	}
 
@@ -194,7 +221,6 @@ func (w *Webhook) Notify(ctx context.Context, alerts ...*types.Alert) (bool, err
 		return true, err
 	}
 	resp.Body.Close()
-
 	return w.retry(resp.StatusCode)
 }
 
